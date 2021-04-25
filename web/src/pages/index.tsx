@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
+import { usePlayer } from '../hooks/usePlayer';
+
 import { convertDurationToTimeString } from '../utils/convertDurationToTimeString';
 
 import api from '../services/api';
@@ -20,6 +22,8 @@ interface HomeProps {
 }
 
 const Home: FC<HomeProps> = ({ allEpisodes, latestEpisodes }) => {
+  const { play } = usePlayer();
+
   return (
     <div className={styles.homepage}>
       <section className={styles.latestEpisodes}>
@@ -45,7 +49,7 @@ const Home: FC<HomeProps> = ({ allEpisodes, latestEpisodes }) => {
                 <span>{episode.durationFormated}</span>
               </div>
 
-              <button type="button">
+              <button type="button" onClick={() => play(episode)}>
                 <img src="/play-green.svg" alt="Tocar Episódio" />
               </button>
             </li>
@@ -82,7 +86,7 @@ const Home: FC<HomeProps> = ({ allEpisodes, latestEpisodes }) => {
                 </td>
 
                 <td>
-                  <Link href={`episodes/${episode.id}`}>{episode.title}</Link>
+                  <Link href={`/episodes/${episode.id}`}>{episode.title}</Link>
                 </td>
 
                 <td>{episode.members}</td>
@@ -90,7 +94,7 @@ const Home: FC<HomeProps> = ({ allEpisodes, latestEpisodes }) => {
                 <td>{episode.durationFormated}</td>
 
                 <td>
-                  <button type="button">
+                  <button type="button" onClick={() => play(episode)}>
                     <img src="/play-green.svg" alt="Tocar Episódio" />
                   </button>
                 </td>

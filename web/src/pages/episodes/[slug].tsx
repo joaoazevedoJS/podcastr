@@ -2,7 +2,6 @@ import { FC, useMemo } from 'react';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 
 import { format, parseISO } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
@@ -13,13 +12,14 @@ import styles from '../../styles/pages/episodes/episode.module.scss';
 
 import { IEpisode, IEpisodeFormated } from '../../models/IEpisode';
 import { convertDurationToTimeString } from '../../utils/convertDurationToTimeString';
+import { usePlayer } from '../../hooks/usePlayer';
 
 interface EpisodeProps {
   episode: IEpisodeFormated;
 }
 
 const Episode: FC<EpisodeProps> = ({ episode }) => {
-  const router = useRouter();
+  const { play } = usePlayer();
 
   const description = useMemo(() => {
     return episode.description.split(/<p>|<\/p>/);
@@ -41,7 +41,7 @@ const Episode: FC<EpisodeProps> = ({ episode }) => {
           objectFit="cover"
         />
 
-        <button type="button">
+        <button type="button" onClick={() => play(episode)}>
           <img src="/play.svg" alt="Tocar episódio" />
         </button>
       </div>
@@ -64,8 +64,24 @@ const Episode: FC<EpisodeProps> = ({ episode }) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
+  const { data: episodes } = await api.get<IEpisode[]>('/episodes', {
+    params: {
+      _limit: 2,
+      _sort: 'published_at',
+      _order: 'desc',
+    },
+  });
+
+  const paths = episodes.map(episode => {
+    return {
+      params: {
+        slug: episode.id,
+      },
+    };
+  });
+
   return {
-    paths: [],
+    paths,
     fallback: 'blocking',
   };
 };
