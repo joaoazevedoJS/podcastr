@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { GetStaticProps } from 'next';
+import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -17,93 +18,107 @@ import styles from '../styles/pages/home.module.scss';
 import { IEpisode, IEpisodeFormated } from '../models/IEpisode';
 
 interface HomeProps {
-  allEpisodes: Array<IEpisodeFormated>;
+  otherEpisodes: Array<IEpisodeFormated>;
   latestEpisodes: Array<IEpisodeFormated>;
+  episodes: Array<IEpisodeFormated>;
 }
 
-const Home: FC<HomeProps> = ({ allEpisodes, latestEpisodes }) => {
-  const { play } = usePlayer();
+const Home: FC<HomeProps> = ({ otherEpisodes, latestEpisodes, episodes }) => {
+  const { playList } = usePlayer();
 
   return (
-    <div className={styles.homepage}>
-      <section className={styles.latestEpisodes}>
-        <h2>Último lançamentos</h2>
+    <>
+      <Head>
+        <title>Podcastr | Home</title>
+      </Head>
 
-        <ul>
-          {latestEpisodes.map(episode => (
-            <li key={episode.id}>
-              <Image
-                width={192}
-                height={192}
-                src={episode.thumbnail}
-                alt={episode.title}
-                objectFit="cover"
-              />
+      <div className={styles.homepage}>
+        <section className={styles.latestEpisodes}>
+          <h2>Último lançamentos</h2>
 
-              <div className={styles.episodeDetails}>
-                <Link href={`/episodes/${episode.id}`}>{episode.title}</Link>
+          <ul>
+            {latestEpisodes.map((episode, index) => (
+              <li key={episode.id}>
+                <Image
+                  width={192}
+                  height={192}
+                  src={episode.thumbnail}
+                  alt={episode.title}
+                  objectFit="cover"
+                />
 
-                <p>{episode.members}</p>
-
-                <span>{episode.publishedAtFormated}</span>
-                <span>{episode.durationFormated}</span>
-              </div>
-
-              <button type="button" onClick={() => play(episode)}>
-                <img src="/play-green.svg" alt="Tocar Episódio" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className={styles.allEpisodes}>
-        <h2>Todos os episódios</h2>
-
-        <table cellSpacing={0}>
-          <thead>
-            <tr>
-              <th>{}</th>
-              <th>Podcast</th>
-              <th>Integrantes</th>
-              <th>Data</th>
-              <th>Duração</th>
-              <th>{}</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {allEpisodes.map(episode => (
-              <tr key={episode.id}>
-                <td style={{ width: 72 }}>
-                  <Image
-                    width={120}
-                    height={120}
-                    src={episode.thumbnail}
-                    alt={episode.title}
-                    objectFit="cover"
-                  />
-                </td>
-
-                <td>
+                <div className={styles.episodeDetails}>
                   <Link href={`/episodes/${episode.id}`}>{episode.title}</Link>
-                </td>
 
-                <td>{episode.members}</td>
-                <td style={{ width: 100 }}>{episode.publishedAtFormated}</td>
-                <td>{episode.durationFormated}</td>
+                  <p>{episode.members}</p>
 
-                <td>
-                  <button type="button" onClick={() => play(episode)}>
-                    <img src="/play-green.svg" alt="Tocar Episódio" />
-                  </button>
-                </td>
-              </tr>
+                  <span>{episode.publishedAtFormated}</span>
+                  <span>{episode.durationFormated}</span>
+                </div>
+
+                <button type="button" onClick={() => playList(episodes, index)}>
+                  <img src="/play-green.svg" alt="Tocar Episódio" />
+                </button>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </section>
-    </div>
+          </ul>
+        </section>
+
+        <section className={styles.allEpisodes}>
+          <h2>Todos os episódios</h2>
+
+          <table cellSpacing={0}>
+            <thead>
+              <tr>
+                <th>{}</th>
+                <th>Podcast</th>
+                <th>Integrantes</th>
+                <th>Data</th>
+                <th>Duração</th>
+                <th>{}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {otherEpisodes.map((episode, index) => (
+                <tr key={episode.id}>
+                  <td style={{ width: 72 }}>
+                    <Image
+                      width={120}
+                      height={120}
+                      src={episode.thumbnail}
+                      alt={episode.title}
+                      objectFit="cover"
+                    />
+                  </td>
+
+                  <td>
+                    <Link href={`/episodes/${episode.id}`}>
+                      {episode.title}
+                    </Link>
+                  </td>
+
+                  <td>{episode.members}</td>
+                  <td style={{ width: 100 }}>{episode.publishedAtFormated}</td>
+                  <td>{episode.durationFormated}</td>
+
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playList(episodes, index + latestEpisodes.length);
+                      }}
+                    >
+                      <img src="/play-green.svg" alt="Tocar Episódio" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </>
   );
 };
 
@@ -131,12 +146,13 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
   });
 
   const latestEpisodes = episodes.slice(0, 2);
-  const allEpisodes = episodes.slice(2, episodes.length);
+  const otherEpisodes = episodes.slice(2, episodes.length);
 
   return {
     props: {
-      allEpisodes,
+      otherEpisodes,
       latestEpisodes,
+      episodes,
     },
     revalidate: 60 * 60 * 24, // 24h
   };

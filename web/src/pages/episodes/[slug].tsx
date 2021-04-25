@@ -1,5 +1,6 @@
 import { FC, useMemo } from 'react';
 import { GetStaticPaths, GetStaticProps } from 'next';
+import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -26,40 +27,46 @@ const Episode: FC<EpisodeProps> = ({ episode }) => {
   }, [episode.description]);
 
   return (
-    <div className={styles.episode}>
-      <div className={styles.thumbnailContainer}>
-        <Link href="/">
-          <button type="button">
-            <img src="/arrow-left.svg" alt="Voltar" />
+    <>
+      <Head>
+        <title>{episode.title}</title>
+      </Head>
+
+      <div className={styles.episode}>
+        <div className={styles.thumbnailContainer}>
+          <Link href="/">
+            <button type="button">
+              <img src="/arrow-left.svg" alt="Voltar" />
+            </button>
+          </Link>
+
+          <Image
+            width={700}
+            height={160}
+            src={episode.thumbnail}
+            objectFit="cover"
+          />
+
+          <button type="button" onClick={() => play(episode)}>
+            <img src="/play.svg" alt="Tocar episódio" />
           </button>
-        </Link>
+        </div>
 
-        <Image
-          width={700}
-          height={160}
-          src={episode.thumbnail}
-          objectFit="cover"
-        />
+        <header>
+          <h1>{episode.title}</h1>
 
-        <button type="button" onClick={() => play(episode)}>
-          <img src="/play.svg" alt="Tocar episódio" />
-        </button>
+          <span>{episode.members}</span>
+          <span>{episode.publishedAtFormated}</span>
+          <span>{episode.durationFormated}</span>
+        </header>
+
+        <div className={styles.description}>
+          {description.map(content => (
+            <p key={content}>{content}</p>
+          ))}
+        </div>
       </div>
-
-      <header>
-        <h1>{episode.title}</h1>
-
-        <span>{episode.members}</span>
-        <span>{episode.publishedAtFormated}</span>
-        <span>{episode.durationFormated}</span>
-      </header>
-
-      <div className={styles.description}>
-        {description.map(content => (
-          <p key={content}>{content}</p>
-        ))}
-      </div>
-    </div>
+    </>
   );
 };
 
